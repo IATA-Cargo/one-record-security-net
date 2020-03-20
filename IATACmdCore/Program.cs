@@ -1,19 +1,20 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace IATACmd
+namespace IATACmdCore
 {
     class ApiRequest
     {
+        private IConfigurationRoot _configuration;
+
         HttpStatusCode StatusCode
         {
             get
@@ -22,7 +23,7 @@ namespace IATACmd
             }
         }
         protected HttpStatusCode _statusCode = HttpStatusCode.OK;
-        
+
         protected string _apiUrl = null;
         protected string _rawMessage = string.Empty;
         protected string _errorMessage = string.Empty;
@@ -40,22 +41,25 @@ namespace IATACmd
                 return _rawMessage;
             }
         }
-        public ApiRequest(string apiUrl = null)
+        public ApiRequest(string apiUrl = null, IConfigurationRoot configuration = null)
         {
+            _configuration = configuration;
             _apiUrl = apiUrl;
         }
-        async Task RequestAsync(int  id)
+        async Task RequestAsync(int id)
         {
 
-            var handler = new System.Net.Http.WebRequestHandler();
-            if (!string.IsNullOrEmpty(System.Configuration.ConfigurationManager.AppSettings["SSLCertThmbprint"])) 
-            { 
+            var handler = new HttpClientHandler();
+            handler.ClientCertificateOptions = ClientCertificateOption.Manual;
+            //handler.SslProtocols = SslProtocols.Tls12;
+            if (!string.IsNullOrEmpty(_configuration["SSLCertThmbprint"]))
+            {
                 //Perfome SSL Pinning. It is required to get SHA1 thumbprint of the SSL Server Certificate
                 //and put it in the appSettings
                 //Maybe the Key Identifier should be used. But the first version we should simply use SHA1 thumbprint.
-                handler.ServerCertificateValidationCallback = (sender, cert, chain, error) =>
+                handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, error) =>
                 {
-                    var fixedSID = System.Configuration.ConfigurationManager.AppSettings["SSLCertThmbprint"];
+                    var fixedSID = _configuration["SSLCertThmbprint"];
                     var ch = X509Chain.Create();
                     ch.ChainPolicy = new X509ChainPolicy
                     {
@@ -100,22 +104,22 @@ namespace IATACmd
                     return false;
                 };
             }
-            
+
             //Loading the client certificate to setup SSL Client Authentication.
-            var clientCertFile      = System.Configuration.ConfigurationManager.AppSettings["SSLClientCert"];
-            var clientCertFilePwd   = System.Configuration.ConfigurationManager.AppSettings["SSLClientCertPwd"];
-            var clientCert          = new X509Certificate2(clientCertFile, clientCertFilePwd);
+            var clientCertFile = _configuration["SSLClientCert"];
+            var clientCertFilePwd = _configuration["SSLClientCertPwd"];
+            var clientCert = new X509Certificate2(clientCertFile, clientCertFilePwd);
             handler.ClientCertificates.Add(clientCert);
-            
-            var client  = new HttpClient(handler);
-            var url     = _apiUrl + id;
+
+            var client = new HttpClient(handler);
+            var url = _apiUrl + id;
             var outgoing = new Uri(url);
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, outgoing);
             var response = await client.SendAsync(httpRequest).ConfigureAwait(false);
             _statusCode = response.StatusCode;
             _rawMessage = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         }
-        
+
         /// <summary>
         /// Create a sample request under SSL Client Authentication 
         /// </summary>
@@ -127,13 +131,28 @@ namespace IATACmd
     }
     class Program
     {
+        public static IConfigurationRoot _configuration;
+
         static void Main(string[] args)
         {
-            var cert = new X509Certificate2(@"C:\Users\Administrator\Downloads\companyX.crt");
-            var s = cert.GetNameInfo(System.Security.Cryptography.X509Certificates.X509NameType.UrlName, false);
-            var subject = cert.SubjectName;
-            
-            (new ApiRequest("https://localhost/IATADev/api/values/")).Request(1);
+            buildConfigApplication();
+
+            //(new ApiRequest("https://localhost/IATADev/api/values/", _configuration)).Request(1);
+            (new ApiRequest("https://localhost/iatadevcore/weatherforecast/", _configuration)).Request(1);
+        }
+
+        static void buildConfigApplication()
+        {
+           
+            var services = new ServiceCollection();
+
+            // Set up configuration sources.
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appSetting.json");
+
+            _configuration = builder.Build();
+
         }
     }
 }

@@ -1,0 +1,6 @@
+{
+  "SSLCertThmbprint": "0593e963245d5e8cc24a8197dd797cb48d4f0aa1",
+  "SSLClientCert": "C:\\Users\\Administrator\\source\\repos\\IATADev\\Cert\\clientcert.p12",
+  //"SSLClientCert": "C:\\Users\\Administrator\\source\\repos\\IATADev\\Cert\\revoked.p12",
+  "SSLClientCertPwd": "#IATA2020x"
+}
