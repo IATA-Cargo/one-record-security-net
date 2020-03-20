@@ -9,46 +9,45 @@ namespace IATADev.Controllers
 {
     public class ValuesController : ApiController
     {
-        // GET api/values
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
 
         // GET api/values/5
         public string Get(int id)
         {
-            var clientCert = GetClientCert();
-            
-            if (clientCert == null)
+            try
             {
-                return "Bad Request";
+                var clientCert = GetClientCert();
+                if (clientCert == null)
+                {
+                    throw new UnauthorizedAccessException();
+                }
+
+                var certStatus = (new CertValidator()).Validate(clientCert.RawData);
+                if (certStatus.Status == "Good")
+                {
+                    return "Your client cert is: " + clientCert.Subject;
+                }
+                else
+                {
+                    throw new UnauthorizedAccessException(certStatus.ErrorMessage);
+                }
             }
+            catch(Exception ex)
+            {
+                if (ex is UnauthorizedAccessException)
+                {
+                    throw ex;
+                }
 
-            return "Your client cert is: " + clientCert.Subject;
-        }
-
-        // POST api/values
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/values/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5
-        public void Delete(int id)
-        {
+                return "500-Internal Server Error.";
+            }
         }
 
         System.Security.Cryptography.X509Certificates.X509Certificate2 GetClientCert()
         {
             try
             {
-                var clientCert = System.Web.HttpContext.Current.Request.ClientCertificate;
-                var bytes = clientCert.Certificate;
+                var clientCert  = System.Web.HttpContext.Current.Request.ClientCertificate;
+                var bytes       = clientCert.Certificate;
                 return new System.Security.Cryptography.X509Certificates.X509Certificate2(bytes);
             }
             catch
