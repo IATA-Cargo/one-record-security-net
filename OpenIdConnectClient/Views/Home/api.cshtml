@@ -1,0 +1,56 @@
+﻿@model WebOpenIdConnectClient.Models.CommonViewModel
+
+<div class="row" style="margin-top:15px;">
+@if ((Model?.VerifyResult ?? false))
+{
+    <h2>You are authenticated.</h2>
+    <p>
+        The call to the API (<a href="@Model?.ApiUri" target="_blank">@Model?.ApiUri</a>) is successful. <br /><br />
+    </p>
+}
+else
+{
+    <h2>You are unauthenticated.</h2>
+    <p>
+        The call to the API (<a href="@Model?.ApiUri" target="_blank">@Model?.ApiUri</a>) is false. <br /><br />
+        <pre style="margin-top:15px;">@Model?.VerifyMessage</pre>
+    </p>
+}
+</div>
+
+<div class="row">
+
+    <div class="col-md-4 col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Api Request Headers</div>
+            <div class="panel-body">
+                <pre style="margin-top:15px;">@Model?.ApiRequestHeader</pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Api Response</div>
+            <div class="panel-body">
+                <pre style="margin-top:15px;">@Model?.ApiRequestRespose</pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Result Data</div>
+            <div class="panel-body">
+                <pre style="margin-top:15px;">@Model?.ResultData</pre>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">Authenticated Subject</div>
+            <div class="panel-body">
+                <pre style="margin-top:15px;">@Model?.AuthenticatedSubject</pre>
+            </div>
+        </div>
+    </div>
+
+</div>
