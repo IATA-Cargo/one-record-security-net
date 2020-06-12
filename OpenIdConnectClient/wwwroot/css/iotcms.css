@@ -1,0 +1,48 @@
+.truncateEllipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+.headerCardLength {
+    max-width: 650px;
+}
+
+.td_breakword {
+    display: table;
+    white-space: normal; /* css-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+    word-break: break-all;
+    display: block;
+}
+
+.dataTables_paginate {
+    /*display: flex;
+    align-items: center;*/
+}
+
+.dataTables_filter {
+    display: none;
+}
+
+.wrequired{
+}
+    .wrequired:after {
+        content: " * ";
+        font-weight: bold;
+        color: #d00000;
+    }
+
+.wi_row_card {
+    padding-left: 12px;
+    padding-right: 12px;
+    margin-bottom: 10px;
+}
+
+.card {
+    margin-bottom: 0;
+}

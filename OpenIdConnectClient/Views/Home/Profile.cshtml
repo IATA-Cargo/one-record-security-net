@@ -1,0 +1,15 @@
+﻿@model WebOpenIdConnectClient.Models.CommonViewModel
+
+<div class="row" style="margin-top:15px;">
+    <h2>Profile.</h2>
+    <p>
+        <br />
+        <br />
+        Username: <strong>@Html.Raw(Model?.Username)</strong><br />
+        Roles: <strong>@Html.Raw(Model?.Role)</strong><br />
+        <br />
+        Click <a href="@Url.Action("DownloadIndentity")" target="_blank">Here</a> to download token.<br />
+        Click <a href="https://jwt.ms/#id_token=@Model?.IdToken" target="_blank">Here</a> to view the ID Token.
+    </p>
+</div>
+
