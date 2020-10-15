@@ -5,11 +5,31 @@
     <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="BouncyCastle" Version="1.8.6.1" />
+    <Compile Remove="Http\**" />
+    <Compile Remove="Model\**" />
+    <EmbeddedResource Remove="Http\**" />
+    <EmbeddedResource Remove="Model\**" />
+    <None Remove="Http\**" />
+    <None Remove="Model\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ApiBase.cs" />
+    <Compile Remove="CMSConnect.cs" />
+    <Compile Remove="Identity4Connect.cs" />
+    <Compile Remove="UraConnection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.1.6" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.8.8" />
     <PackageReference Include="RestSharp" Version="106.10.1" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
   </ItemGroup>
