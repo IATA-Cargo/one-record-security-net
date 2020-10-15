@@ -18,9 +18,9 @@
     using System.Security.Authentication;
     using WebOpenIdConnectClient.Controllers;
     using UraClient;
-
+    
     [Authorize]
-    public class HomeController : PageControolerBase
+    public class HomeController : PageControllerBase
     {
 
         /// <summary>
@@ -52,40 +52,24 @@
         /// <summary>
         /// Simple Api page
         /// </summary>
-        /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Api(string id)
+        public async Task<IActionResult> Api()
         {
             await LoadCommonValue4ViewAsync("Sample Api");
 
-            var Tokens = new List<ShowValue>();
-            var AccessToken = "";
             var IdToken = "";
             try
             {
-                var properties = await Request.HttpContext.AuthenticateAsync();
-                AccessToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
+                //AccessToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
                 IdToken = await _httpContextAccessor.HttpContext.GetTokenAsync("id_token");
-                if (properties != null && properties.Properties?.Items != null)
-                {
-                    Tokens = (from c in properties.Properties.Items
-                              select new ShowValue
-                              {
-                                  Key = c.Key,
-                                  Value = c.Value
-                              }).ToList();
-                }
             }
-            catch (Exception)
-            {
-            }
+            catch (Exception) { }
 
-            var vm = new CommonViewModel
+            var vm = new ApiViewModel
             {
                 IdToken = IdToken,
-                AccessToken = AccessToken,
-                ApiUri = GetConfig("ApiVerify"),
+                ApiUri = GetConfig("Dummy1RAPI"),
                 ApiRequestHeader = "",
                 ApiRequestRespose = "",
                 AuthenticatedSubject = "",
@@ -100,22 +84,21 @@
                     return View(vm);
                 }
 
-                if (string.IsNullOrEmpty(AccessToken))
-                {
-                    vm.VerifyMessage = "Verify error: access token is not found";
-                    return View(vm);
-                }
-                
                 var rstMessage = "";
                 vm.VerifyMessage = rstMessage;
+
+                string certificateFilePath = GetConfig("ClientCert:Path");
+                string certificatePassphrase = GetConfig("ClientCert:Passphrase");
+
+
                 X509Certificate2 cert = new CertUtils(string.Empty)
-                    .LoadCertPfx(GetConfig("Cert:SingedCert"), GetConfig("Cert:SingedCertPass"));
+                    .LoadCertPfx(certificateFilePath, certificatePassphrase);
                 
                 vm.ApiRequestHeader = JsonFormatPretty(new { id_token = IdToken });
-                rstMessage = callApiVerify(IdToken, cert);
+                rstMessage = Call1RDummyAPI(IdToken, cert);
 
                 vm.VerifyMessage = rstMessage;
-                var resultObj = convert2Object<VerifyResponse>(rstMessage);
+                var resultObj = Convert2Object<OneRecordDummyResponse>(rstMessage);
 
                 vm.VerifyResult = resultObj?.message == Constances.VERIFY_OK;
                 vm.ApiRequestRespose = JsonFormatPrettyStr(rstMessage);
@@ -140,10 +123,7 @@
         {
             await LoadCommonValue4ViewAsync("Profile");
 
-            List<ShowValue> Tokens = new List<ShowValue>();
-            var AccessToken = "";
             var IdToken = "";
-            var authenObject = "";
             var username = "";
             var role = "";
             try
@@ -161,35 +141,16 @@
                     role = claims.FirstOrDefault(i => (i.Key == "role"))?.Value + "";
                 }
 
-                AccessToken = await _httpContextAccessor.HttpContext.GetTokenAsync("access_token");
                 IdToken = await _httpContextAccessor.HttpContext.GetTokenAsync("id_token");
 
-                var properties = await Request.HttpContext.AuthenticateAsync();
-                if (properties != null && properties.Properties?.Items != null)
-                {
-                    Tokens = (from c in properties.Properties.Items
-                              select new ShowValue
-                              {
-                                  Key = c.Key,
-                                  Value = c.Value
-                              }).ToList();
-                }
-                
-                try
-                {
-                    authenObject = JsonConvert.SerializeObject(Tokens);
-                }
-                catch (Exception) { }
             }
             catch (Exception)
             {
             }
 
-            var vm = new CommonViewModel
+            var vm = new ProfileViewModel
             {
                 IdToken = IdToken,
-                AccessToken = AccessToken,
-                VerifyMessage = authenObject,
                 Username = username,
                 Role = role,
             };
@@ -222,13 +183,10 @@
         /// <summary>
         /// View details of user
         /// </summary>
-        /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> DownloadIndentity()
         {
-
-            ViewData["MenuVerify"] = GetConfig("MenuVerifyShow");
             var contentType = "application/force-download";
             var fileName = "identity.json";
             try
@@ -276,7 +234,7 @@
         /// <param name="token"></param>
         /// <param name="certClient"></param>
         /// <returns></returns>
-        private string callApiVerify(string token, X509Certificate2 certClient = null)
+        private string Call1RDummyAPI(string token, X509Certificate2 certClient = null)
         {
             try
             {
@@ -294,13 +252,24 @@
                         SslProtocols = SslProtocols.Tls12
                     };
                     handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, error) => {
+                        if (cert == null)
+                        {
+                            throw new UnauthorizedAccessException("1R TLS Server Certificate is required.");
+                        }
+                        string cacheFolder = _configuration["CacheFolder"];
+                        var certStatus = (new CertValidator(cacheFolder)).Validate(cert.RawData);
+                        //if (certStatus.Status = "Good")
+                        if (certStatus.Status == "Revoked" || cert.NotAfter < DateTime.UtcNow )
+                        {
+                            throw new UnauthorizedAccessException(certStatus.ErrorMessage);
+                        }
                         return true;
                     };
                     handler.ClientCertificates.Add(certClient);
                     client = new HttpClient(handler);
                 }
                 
-                client.BaseAddress = new Uri(GetConfig("ApiVerify"));
+                client.BaseAddress = new Uri(GetConfig("Dummy1RAPI"));
                 
                 // Add an Accept header for JSON format.
                 client.DefaultRequestHeaders.Accept.Add(
@@ -339,7 +308,7 @@
             try
             {
                 if (string.IsNullOrWhiteSpace(data)) return string.Empty;
-                var jsonObj = JsonConvert.DeserializeObject<VerifyResponse>(data);
+                var jsonObj = JsonConvert.DeserializeObject<OneRecordDummyResponse>(data);
                 string json = JsonConvert.SerializeObject(jsonObj?.result, Formatting.Indented);
                 return json;
             }
@@ -360,15 +329,15 @@
             {
                 string json = string.Empty;
                 if (string.IsNullOrWhiteSpace(data)) return string.Empty;
-                var jsonObj = JsonConvert.DeserializeObject<VerifyResponse>(data);
-                if (jsonObj?.authenticatedSubject?.type == Constances.TYPE_SSL_MUTUAL)
+                var jsonObj = JsonConvert.DeserializeObject<OneRecordDummyResponse>(data);
+                if (jsonObj?.subcriberID?.desc == Constances.TYPE_SSL_MUTUAL)
                 {
-                    var jsonMutual = JsonConvert.DeserializeObject<VerifyResponseMutual>(data);
-                    json = JsonConvert.SerializeObject(jsonMutual?.authenticatedSubject, Formatting.Indented);
+                    var jsonMutual = JsonConvert.DeserializeObject<OneRecordDummyResponse>(data);
+                    json = JsonConvert.SerializeObject(jsonMutual?.subcriberID, Formatting.Indented);
                 }
                 else
                 {
-                    json = JsonConvert.SerializeObject(jsonObj?.authenticatedSubject, Formatting.Indented);
+                    json = JsonConvert.SerializeObject(jsonObj?.subcriberID, Formatting.Indented);
                 }
                 return json;
             }

@@ -13,6 +13,7 @@
     using WebOpenIdConnectClient.Api;
     using System.Collections.Generic;
     using WebOpenIdConnectClient.Models;
+    using UraClient;
 
     [Route("[controller]")]
     public class IdentityController : ApiControllerBase
@@ -42,7 +43,7 @@
                 // Return client cert information
                 if (clientCert != null)
                 {
-                    var sans = new UraClient.CertUtils("").LoadSansCert(clientCert);
+                    var sans = CertValidator.ParseOneRecordIDs(clientCert);
                     return CreateResultResponse(clientCert, sans);
                 }
 
@@ -105,11 +106,11 @@
                 return ("iss uri is invalid", null, 0);
             }
 
-            var is4Client = new UraClient.Identity4Connect();
-            var ski = is4Client.GetSKI(disco.JwksUri, out string error);
-            if (string.IsNullOrEmpty(ski) || !string.IsNullOrEmpty(error))
+            var is4Client = new UraClient.OIDCUtil(disco.JwksUri);
+            var ski = is4Client.SKI;
+            if (string.IsNullOrEmpty(ski))
             {
-                return ("Can not get ski: " + error, null, 0);
+                //return ("Can not get ski: " + error, null, 0);
             }
 
             #endregion
@@ -134,7 +135,7 @@
         /// <param name="cert">Certificate show</param>
         /// <param name="sans">Sans of certificate</param>
         /// <returns>Object for client</returns>
-        private JsonResult CreateResultResponse(X509Certificate2 cert, List<string> sans = null)
+        private JsonResult CreateResultResponse(X509Certificate2 cert, IList<string> sans = null)
         {
             if (sans == null)
             {

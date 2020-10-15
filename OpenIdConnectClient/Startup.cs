@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
     using Microsoft.IdentityModel.Tokens;
     using System.Net.Http;
 
@@ -22,7 +23,7 @@
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
+
             services
                 .AddAuthentication(options =>
                 {
@@ -33,9 +34,9 @@
                 .AddOpenIdConnect("oidc", options =>
                 {
                     options.SignInScheme = "cookie";
-                    options.Authority = Configuration["IS4:HostBase"];
-                    options.ClientId = Configuration["IS4:ClientId"];
-                    options.ClientSecret = Configuration["IS4:ClientSecret"];
+                    options.Authority = Configuration["OIDC_IP:HostBase"];
+                    options.ClientId = Configuration["OIDC_IP:ClientId"];
+                    options.ClientSecret = Configuration["OIDC_IP:ClientSecret"];
                     options.CallbackPath = "/signin-oidc";
                     options.ResponseType = "code id_token";
                     options.RequireHttpsMetadata = false;
@@ -51,15 +52,14 @@
                         NameClaimType = JwtClaimTypes.Name,
                         RoleClaimType = JwtClaimTypes.Role,
                     };
-                    
                 });
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddMvc();
-            
+            services.AddControllersWithViews();
         }
 
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -70,19 +70,18 @@
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseAuthentication();
-
+            app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-                routes.MapRoute(
-                    name: "api", 
-                    template: "{controller=Identity}");
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

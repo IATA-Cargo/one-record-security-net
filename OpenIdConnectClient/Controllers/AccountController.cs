@@ -4,7 +4,7 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
 
-    public class AccountController : PageControolerBase
+    public class AccountController : PageControllerBase
     {
         /// <summary>
         /// Intialize class

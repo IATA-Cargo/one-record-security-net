@@ -1,4 +1,4 @@
-﻿@model WebOpenIdConnectClient.Models.CommonViewModel
+﻿@model WebOpenIdConnectClient.Models.ApiViewModel
 
 <div class="row" style="margin-top:15px;">
 @if ((Model?.VerifyResult ?? false))
@@ -22,7 +22,7 @@ else
 
     <div class="col-md-4 col-sm-12">
         <div class="panel panel-default">
-            <div class="panel-heading">Api Request Headers</div>
+            <div class="panel-heading">Request Headers</div>
             <div class="panel-body">
                 <pre style="margin-top:15px;">@Model?.ApiRequestHeader</pre>
             </div>
@@ -31,7 +31,7 @@ else
 
     <div class="col-md-4 col-sm-12">
         <div class="panel panel-default">
-            <div class="panel-heading">Api Response</div>
+            <div class="panel-heading">Dummy 1R API Response</div>
             <div class="panel-body">
                 <pre style="margin-top:15px;">@Model?.ApiRequestRespose</pre>
             </div>
@@ -40,13 +40,13 @@ else
 
     <div class="col-md-4 col-sm-12">
         <div class="panel panel-default">
-            <div class="panel-heading">Result Data</div>
+            <div class="panel-heading">Dummy Data</div>
             <div class="panel-body">
                 <pre style="margin-top:15px;">@Model?.ResultData</pre>
             </div>
         </div>
         <div class="panel panel-default">
-            <div class="panel-heading">Authenticated Subject</div>
+            <div class="panel-heading">Subcriber ID</div>
             <div class="panel-body">
                 <pre style="margin-top:15px;">@Model?.AuthenticatedSubject</pre>
             </div>

@@ -14,7 +14,7 @@
     using System.Net.Http;
     using System.Threading.Tasks;
 
-    public class PageControolerBase : Controller
+    public class PageControllerBase : Controller
     {
 
         protected IConfiguration _configuration;
@@ -25,7 +25,7 @@
         /// </summary>
         /// <param name="configuration"></param>
         /// <param name="httpContextAccessor"></param>
-        public PageControolerBase(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public PageControllerBase(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
@@ -53,7 +53,7 @@
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        protected async Task<string> validateIdTokenJwTAsync(string token)
+        protected async Task<string> ValidateIdTokenJwTAsync(string token)
         {
 
             try
@@ -116,7 +116,7 @@
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        protected async Task<string> validateIdTokenViaApiAsync(string token)
+        protected async Task<string> ValidateIdTokenViaApiAsync(string token)
         {
             try
             {
@@ -135,8 +135,10 @@
                 var client = new HttpClient();
                 var disco = await client.GetDiscoveryDocumentAsync(iss);
 
-                var nvc = new List<KeyValuePair<string, string>>();
-                nvc.Add(new KeyValuePair<string, string>("token", token));
+                var nvc = new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("token", token)
+                };
                 HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Post, disco.IntrospectionEndpoint);
 
                 HttpClient client1 = new HttpClient();
@@ -219,19 +221,19 @@
         /// <summary>
         /// Convert string to the object
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="jsonData"></param>
         /// <returns></returns>
-        protected T convert2Object<T>(string jsonData)
+        protected T Convert2Object<T>(string jsonData)
         {
             try
             {
-                if (string.IsNullOrEmpty(jsonData)) return default(T);
+                if (string.IsNullOrEmpty(jsonData)) return default;
                 var obj = JsonConvert.DeserializeObject<T>(jsonData);
                 return obj;
             }
             catch (Exception)
             {
-                return default(T);
+                return default;
             }
         }
     }

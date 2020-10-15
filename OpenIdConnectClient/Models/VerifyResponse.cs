@@ -47,9 +47,8 @@
         public string validationService { get; set; } = "IATA Trust Platform";
     }
 
-
     public class AuthenticatedSubjectMutual : AuthenticatedSubject
     {
-        public List<string> sans { get; set; }
+        public IList<string> sans { get; set; }
     }
 }
