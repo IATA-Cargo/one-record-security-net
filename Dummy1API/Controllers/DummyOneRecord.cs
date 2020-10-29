@@ -165,6 +165,12 @@ namespace Dummy1API.Controllers
         /// <param name="ski"></param>
         void ValidateIAP(string ski)
         {
+            /*
+             * This validation should be done by the service which implement OneRecord APIs.
+             * Please note that SKI often changes due to key rollover (rotation) of the IAP
+             */
+            return;
+            /*
             var iapList = GetTrustIAPList();
             foreach(var iap in iapList)
             {
@@ -172,6 +178,7 @@ namespace Dummy1API.Controllers
                     return;
             }
             throw new UnauthorizedAccessException("Untrusted IAP error.");
+            */
         }
 
         JwtSecurityToken ValidateIDToken(string jwtToken, RSAParameters param)
