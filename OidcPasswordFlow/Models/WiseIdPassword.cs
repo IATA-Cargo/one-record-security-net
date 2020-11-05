@@ -21,6 +21,14 @@
 		public string client_id { get; set; } = STRING_EMPTY;
 		public string client_secret { get; set; } = STRING_EMPTY;
 
+		/// <summary>
+		/// Intialize class and parse base data (thumbprint, password)
+		/// </summary>
+		/// <param name="userId"></param>
+		/// <param name="pass"></param>
+		/// <param name="appId"></param>
+		/// <param name="appKey"></param>
+		/// <param name="pathCrt"></param>
 		public WiseIdPassword(string userId, string pass, string appId, string appKey, string pathCrt)
 		{
 
@@ -38,6 +46,10 @@
 			this.password = BitConverter.ToString(passBytes).Replace("-", "");
 		}
 
+		/// <summary>
+		/// Build json data string from this object
+		/// </summary>
+		/// <returns></returns>
 		public string ToJson()
 		{
 			try
@@ -50,19 +62,11 @@
 			}
 		}
 
-		public string BuildFormData()
-		{
-			string result =  $"username={username}_{thumbprint}" +
-							 $"&password={password}" +
-							 $"&grant_type={grant_type}" +
-							 $"&scope={scope}" +
-							 $"&client_id={client_id}" +
-							 $"&client_secret={client_secret}";
-
-			return result;
-		}
-
-		public Dictionary<string, string> BuildFormData1()
+		/// <summary>
+		/// Build form data string from this object
+		/// </summary>
+		/// <returns></returns>
+		public Dictionary<string, string> BuildFormData()
 		{
 			var result = new Dictionary<string, string>
 			{
@@ -77,6 +81,11 @@
 			return result;
 		}
 
+		/// <summary>
+		/// Get certificate from file
+		/// </summary>
+		/// <param name="resourceFilePath"></param>
+		/// <returns></returns>
 		private X509Certificate2 getCertificate(string resourceFilePath)
 		{
 			try
@@ -87,6 +96,12 @@
 			}
 		}
 
+		/// <summary>
+		/// Encrypt data with certificate ( only public key )
+		/// </summary>
+		/// <param name="certificate"></param>
+		/// <param name="inputData"></param>
+		/// <returns></returns>
 		private byte[] Encrypt(X509Certificate2 certificate, byte[] inputData)
 		{
 			try

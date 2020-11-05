@@ -12,13 +12,21 @@ namespace OidcPasswordFlow.Controllers
     
     public class HomeController : BaseController
     {
-        
+        /// <summary>
+        /// Intialize class
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <param name="logger"></param>
         public HomeController(IConfiguration configuration, ILogger<HomeController> logger) 
             : base(configuration, logger)
         {
             
         }
 
+        /// <summary>
+        /// Default page
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Index()
         {
             try
@@ -33,6 +41,12 @@ namespace OidcPasswordFlow.Controllers
             }
         }
 
+        /// <summary>
+        /// Error page
+        /// </summary>
+        /// <param name="error">The error content</param>
+        /// <param name="details">The details of error</param>
+        /// <returns></returns>
         public IActionResult Errors(string error, string details)
         {
             ViewBag.error = error;
@@ -40,6 +54,10 @@ namespace OidcPasswordFlow.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Get access token and id token from token service
+        /// </summary>
+        /// <returns></returns>
         private WiseIdPasswordResponse GetToken() {
 
             string host = GetConfig("TokenService:host");
@@ -58,7 +76,7 @@ namespace OidcPasswordFlow.Controllers
             }
 
             if (string.IsNullOrEmpty(data.thumbprint) || string.IsNullOrEmpty(data.password)){
-			    throw new Exception("Config data error");
+			    throw new Exception("Configuration data error");
             }
 
             string strBody = "";
@@ -68,7 +86,7 @@ namespace OidcPasswordFlow.Controllers
                 var request = new RestRequest(Method.POST);
                 request.AddHeader("content-type", "application/x-www-form-urlencoded");
 
-                var datas = data.BuildFormData1();
+                var datas = data.BuildFormData();
                 foreach (var item in datas)
                 {
                     request.AddParameter(item.Key, item.Value);

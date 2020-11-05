@@ -1,7 +1,5 @@
 ﻿namespace OpenIdConnectClient
 {
-    using System.IO;
-    using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Hosting;
 

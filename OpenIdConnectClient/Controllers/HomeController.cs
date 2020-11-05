@@ -319,7 +319,7 @@
         }
 
         /// <summary>
-        /// Get authen dataa
+        /// Get authen data
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>

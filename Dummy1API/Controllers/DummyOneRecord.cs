@@ -116,7 +116,13 @@ namespace Dummy1API.Controllers
             ValidateIAP(ski);
         }
 
-        protected string GetHeaderWithKey(List<KeyValuePair<string, StringValues>> headers, string key)
+        /// <summary>
+        /// Get string value from header of client with key
+        /// </summary>
+        /// <param name="headers"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private string GetHeaderWithKey(List<KeyValuePair<string, StringValues>> headers, string key)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;
             if (headers == null) return string.Empty;
@@ -125,27 +131,11 @@ namespace Dummy1API.Controllers
             return headers.FirstOrDefault(i => i.Key == key).Value + "";
         }
 
-        private JsonResult CreateResultResponse(X509Certificate2 cert)
-        {
-            return new JsonResult(new OneRecordDummyResponse
-            {
-                subcriberID = new OneRecordTLSID
-                {
-                    desc = Constants.TYPE_USER_CERTIFICATE,
-                    subjectDN = cert?.Subject,
-                    validFrom = "" + cert?.NotBefore,
-                    validTo = "" + cert?.NotAfter,
-                    issuerDN = cert?.Issuer,
-                    lastAuthenticatedAt = "" + DateTime.UtcNow,
-                    oneRecordIDList = CertValidator.ParseOneRecordIDs(cert)
-                },
-                result = new OneRecordDummyData(),
-                timestamp = DateTime.UtcNow.Ticks,
-                message = Constants.VERIFY_OK,
-            });
-        }
-
-        void ValidateTLSClientCertificate(X509Certificate2 clientCert)
+        /// <summary>
+        /// Validate the client certificate
+        /// </summary>
+        /// <param name="clientCert"></param>
+        private void ValidateTLSClientCertificate(X509Certificate2 clientCert)
         {
             if (clientCert == null)
             {
@@ -162,8 +152,8 @@ namespace Dummy1API.Controllers
         /// <summary>
         /// Validate if IAP of the given token is TRUSTED
         /// </summary>
-        /// <param name="ski"></param>
-        void ValidateIAP(string ski)
+        /// <param name="ski">The subject key indentifier of certificate</param>
+        private void ValidateIAP(string ski)
         {
             /*
              * This validation should be done by the service which implement OneRecord APIs.
@@ -181,7 +171,13 @@ namespace Dummy1API.Controllers
             */
         }
 
-        JwtSecurityToken ValidateIDToken(string jwtToken, RSAParameters param)
+        /// <summary>
+        /// Validate ID Token with jwt format
+        /// </summary>
+        /// <param name="jwtToken">The id token string</param>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        private JwtSecurityToken ValidateIDToken(string jwtToken, RSAParameters param)
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.ImportParameters(param);
@@ -201,11 +197,36 @@ namespace Dummy1API.Controllers
             return validatedSecurityToken as JwtSecurityToken;
         }
 
+        /// <summary>
+        /// The function base process the return data to client
+        /// </summary>
+        /// <param name="cert">X509Certificate2 data</param>
+        /// <returns></returns>
         private JsonResult ProcessRequest(X509Certificate2 cert)
         {
-            return CreateResultResponse(cert);
+            return new JsonResult(new OneRecordDummyResponse
+            {
+                subcriberID = new OneRecordTLSID
+                {
+                    desc = Constants.TYPE_USER_CERTIFICATE,
+                    subjectDN = cert?.Subject,
+                    validFrom = "" + cert?.NotBefore,
+                    validTo = "" + cert?.NotAfter,
+                    issuerDN = cert?.Issuer,
+                    lastAuthenticatedAt = "" + DateTime.UtcNow,
+                    oneRecordIDList = CertValidator.ParseOneRecordIDs(cert)
+                },
+                result = new OneRecordDummyData(),
+                timestamp = DateTime.UtcNow.Ticks,
+                message = Constants.VERIFY_OK,
+            });
         }
 
+        /// <summary>
+        /// The function base process the exception of views
+        /// </summary>
+        /// <param name="ex">The Exception object</param>
+        /// <returns></returns>
         private JsonResult ProcessException(Exception ex)
         {
             if (ex is UnauthorizedAccessException)
@@ -221,7 +242,12 @@ namespace Dummy1API.Controllers
                 Message = ex.Message
             });
         }
-        IList<TrustOidcIP> GetTrustIAPList()
+
+        /// <summary>
+        /// Building dummy trusted IAP list
+        /// </summary>
+        /// <returns></returns>
+        private IList<TrustOidcIP> GetTrustIAPList()
         {
             if (_trustIAPList == null)
             {
@@ -236,6 +262,7 @@ namespace Dummy1API.Controllers
             }
             return _trustIAPList;
         }
+
         internal class TrustOidcIP
         {
             /// <summary>
